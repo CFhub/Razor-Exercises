@@ -1,8 +1,32 @@
 ﻿@{
     Layout = "~/_Layout.cshtml";
     Page.Title = string.Format("Razor - {0}", "Exercise 02_A");
+    var artistarg = Request.Form["artistArg"];
+    var thebutton = Request.Form["theButton"];
+
 }
 
 @section banner {
     <h1>@Page.Title</h1>
 }
+
+<form id="theform" method="post">
+    <div class="row">
+        <div class="col-3">
+            <div class="offset-1">
+                <label id="lblartistArg" for="artistArg">Enter a partial artist name:</label>&nbsp;&nbsp;
+                <input type="text" id="artistArg" name="artistArg"
+                       value="@artistarg" placeholder="partial artist name" />
+                <br /><br />
+                <button type="submit" id="theButton" name="theButton"
+                        value="submit" class="btn btn-primary">
+                    Fetch
+                </button>&nbsp;&nbsp;
+                <button type="submit" id="theButton" name="theButton"
+                        value="reset" class="btn btn-light">
+                    Reset
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
