@@ -1,26 +1,96 @@
 ﻿@{
     Layout = "~/_Layout.cshtml";
     Page.Title = string.Format("Razor - {0}", "Exercise 02_A");
-    var artistarg = Request.Form["artistArg"];
-    var thebutton = Request.Form["theButton"];
 
+    //input variables for web controls
+    var artistname = Request.Form["artistName"]; //name
+    var thebutton = Request.Form["theButton"];
+    
+    //remember the 1st time the page is called
+    //input variables will be null
+
+    //REMEMBER NuGet packages:
+    //Microsoft.Aspnet.WebPages.Data
+    //Microsoft.Aspnet.Webpages.WebData
+
+    //connect to the database
+    //use the name attribute off your web connection string
+    var db = Database.Open("Chinook");
+
+    //create the sql command to be executed on the database
+    //input parameters will be represented by the use of placeholders
+    //placeholders are indexes (0, 1, 2,...)
+    //your command can use multiple placeholders
+
+    var sqlcommand = @"SELECT ArtistID
+                FROM Artists
+                WHERE Name like @0";
+
+    //execute command
+    //there is 3 ways to execute a query DEPENDING on your expected results
+    //a) a single row   .QuerySingle(command [, list of argments])
+    //b) 0, 1 or more records   .Query(command [, list of argments])
+    //c) a single value   .QueryValue(command [, list of argments])
+    //the list of argments are your positional incoming argment values
+    //primary key lookup
+    //result should  be one record
+
+    var @partialstring = "%" + artistname + "%";
+    var results = db.Query(sqlcommand, partialstring);
 }
 
 @section banner {
     <h1>@Page.Title</h1>
 }
 
+@if (IsPost)
+{
+    <p>IsPost = true</p>
+    if (thebutton.Equals("reset"))
+    {
+        <p style="color:darkblue">The Reset Button was just Pressed</p>
+        artistname = "";
+    }
+    else // find
+    {
+        if (results.Count() == 0) //no results
+        {
+            <p style="color:firebrick">There was no record returned from the Data Base</p>
+            artistname = "";
+        }
+        else //there are results
+        {
+            //pass ddl value (CategoryID) to next page
+            // to go to another page use Response.Redirect(pagename) (GET method)
+            // to pass data along with the page
+            // add a ? after the name
+            // add for each parameter a coded pair of    label = value
+            // separate data pairs with an  &
+            // sample syntax    Response.Redirect(page.ext?lbl=value[&lbl=value ...])
+            //WARNING: value are passed in plain text on Url
+            Response.Redirect("Exercise02_B.cshtml?cid=" + artistname);
+            <p style="color:darkgreen">There was @results.Count() record/s returned from the Data Base</p>
+        }
+    }
+}
+else
+{
+    <p>IsPost = false</p>
+    <p style="color:darkblue">The Data Base has NOT been queried</p>
+    artistname = "";
+}
+
 <form id="theform" method="post">
     <div class="row">
         <div class="col-3">
             <div class="offset-1">
-                <label id="lblartistArg" for="artistArg">Enter a partial artist name:</label>&nbsp;&nbsp;
-                <input type="text" id="artistArg" name="artistArg"
-                       value="@artistarg" placeholder="partial artist name" />
+                <label id="lblartistName" for="artistName">Enter a whole or partial artist name:</label>&nbsp;&nbsp;
+                <input type="text" id="artistName" name="artistName"
+                       value="@artistname" placeholder="Artist name" />
                 <br /><br />
                 <button type="submit" id="theButton" name="theButton"
                         value="submit" class="btn btn-primary">
-                    Fetch
+                    Find
                 </button>&nbsp;&nbsp;
                 <button type="submit" id="theButton" name="theButton"
                         value="reset" class="btn btn-light">
