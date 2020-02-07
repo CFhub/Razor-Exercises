@@ -14,26 +14,12 @@
     //Microsoft.Aspnet.Webpages.WebData
 
     //connect to the database
-    //use the name attribute off your web connection string
     var db = Database.Open("Chinook");
 
     //create the sql command to be executed on the database
-    //input parameters will be represented by the use of placeholders
-    //placeholders are indexes (0, 1, 2,...)
-    //your command can use multiple placeholders
-
-    var sqlcommand = @"SELECT ArtistID
-                FROM Artists
-                WHERE Name like @0";
-
-    //execute command
-    //there is 3 ways to execute a query DEPENDING on your expected results
-    //a) a single row   .QuerySingle(command [, list of argments])
-    //b) 0, 1 or more records   .Query(command [, list of argments])
-    //c) a single value   .QueryValue(command [, list of argments])
-    //the list of argments are your positional incoming argment values
-    //primary key lookup
-    //result should  be one record
+    var sqlcommand = @"SELECT ArtistId
+                     FROM Artists
+                     WHERE Name like @0";
 
     var @partialstring = "%" + artistname + "%";
     var results = db.Query(sqlcommand, partialstring);
@@ -55,21 +41,18 @@
     {
         if (results.Count() == 0) //no results
         {
-            <p style="color:firebrick">There was no record returned from the Data Base</p>
+            <p style="color:darkred">There was no record returned from the Data Base</p>
             artistname = "";
         }
-        else //there are results
+        else if (results.Count() >= 1) //there is at least one result
         {
-            //pass ddl value (CategoryID) to next page
-            // to go to another page use Response.Redirect(pagename) (GET method)
-            // to pass data along with the page
-            // add a ? after the name
-            // add for each parameter a coded pair of    label = value
-            // separate data pairs with an  &
-            // sample syntax    Response.Redirect(page.ext?lbl=value[&lbl=value ...])
             //WARNING: value are passed in plain text on Url
             Response.Redirect("Exercise02_B.cshtml?cid=" + artistname);
             <p style="color:darkgreen">There was @results.Count() record/s returned from the Data Base</p>
+        }
+        else
+        {
+            <p style="color:darkred">Please enter an artist name.</p>
         }
     }
 }
