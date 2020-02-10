@@ -5,7 +5,7 @@
     //input variables for web controls
     var artistname = Request.Form["artistName"]; //name
     var thebutton = Request.Form["theButton"];
-    
+
     //remember the 1st time the page is called
     //input variables will be null
 
@@ -17,12 +17,12 @@
     var db = Database.Open("Chinook");
 
     //create the sql command to be executed on the database
-    var sqlcommand = @"SELECT ArtistId, Name 
+    var artistcommand = @"SELECT ArtistId, Name
                         FROM Artists
                         WHERE Name like @0";
 
     var @partialstring = "%" + artistname + "%";
-    var results = db.Query(sqlcommand, partialstring);
+    var results = db.Query(artistcommand, partialstring);
 }
 
 @section banner {
@@ -44,16 +44,11 @@
             <p style="color:darkred">There is no artist by that name</p>
             artistname = "";
         }
-        else if (results.Count() >= 1) //there is at least one result
+        else  //there is at least one result or no input
         {
             //WARNING: value are passed in plain text on Url
             Response.Redirect("Exercise02_B.cshtml?cid=" + artistname);
-            <p style="color:darkgreen">There was @results.Count() record/s returned from the Data Base</p>
-        }
-        else
-        {
-            Response.Redirect("Exercise02_B.cshtml?cid=" + artistname);
-            <p style="color:darkred">Please enter an artist name.</p>
+
         }
     }
 }

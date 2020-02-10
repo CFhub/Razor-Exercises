@@ -1,27 +1,21 @@
 ﻿@{
     Layout = "~/_Layout.cshtml";
     Page.Title = string.Format("Razor - {0}", "Exercise 02_C");
+    var cid = Request.QueryString["cid"];
+    var db = Database.Open("CHINOOK");
 }
 
 @section banner {
     <h1>@Page.Title</h1>
 }
 
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Artist Name</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var row in results)
-        {
-            <tr>
-                <td>@row.ArtistId</td>
-                <td>@row.Name</td>
-            </tr>
-        }
-    </tbody>
-</table>
+@if (IsPost)
+{
+    <p style="color:darkgreen">There was/were @results.Count() artist(s)</p>
+}
+else
+{
+
+}
+
+

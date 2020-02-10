@@ -3,13 +3,15 @@
     Page.Title = string.Format("Razor - {0}", "Exercise 02_B");
     var cid = Request.QueryString["cid"];
     var db = Database.Open("CHINOOK");
-    string sqlcommand = @"SELECT ArtistId, Name
-                    FROM Artists
-                    WHERE Name like @0
-                    ORDER BY Name";
+    string artistcommand = @"SELECT ArtistId, Name
+                            FROM Artists
+                            WHERE Name like @0
+                            ORDER BY Name";
 
+    var artistname = Request.Form["artistName"]; //name
+    var thebutton = Request.Form["theButton"];
     var partialstring = "%" + cid + "%";
-    var results = db.Query(sqlcommand, partialstring);
+    var results = db.Query(artistcommand, partialstring);
 
     if (string.IsNullOrEmpty(cid))
     {
@@ -22,24 +24,49 @@
 }
 
 @if (IsPost)
+{
+    //obtain my data from the form
+    var choice = Request.Form["ArtistList"];
+    //check for a selection
+    if (thebutton.Equals("submit"))
     {
-        var choice = Request.Form["ArtistNames"];
-
-        if (choice.Equals("0"))
+        if (choice.Equals("0")) //no selection
         {
-<p style="color:darkturquoise">Please select an artist</p>
-            }
-            else
-            {
+            <p style="color:darkturquoise">Please select an artist</p>
+        }
+        else //selection
+        {
+            //query db for products of selected category
+            var albumquery = @"SELECT AlbumId, Title,  ArtistId, ReleaseYear, ReleaseLabel
+                 FROM Albums
+                 WHERE ArtistId = @0";
+            var albuminfo = db.Query(albumquery, choice);
 
+            //check to see if there are products for category
+            if (albuminfo.Count() == 0)//no results
+            {
+                <p style="color:darkturquoise">There are no albums from this artist.</p>
+            }
+            else //results
+            {
+                //pass ddl value (AlbumId) to next page
+                // to go to another page use Response.Redirect(pagename) (GET method)
+                // to pass data along with the page
+                // add a ? after the name
+                // add for each parameter a coded pair of    label = value
+                // separate data pairs with an  &
+                // sample syntax    Response.Redirect(page.ext?lbl=value[&lbl=value ...])
+                //WARNING: value are passed in plain text on Url
+                Response.Redirect("Exercise02_C.cshtml?cid=" + choice);
             }
         }
-
+    }
+}
 
 
 <form id="theform" method="post">
     <div class="offset-3">
-        <label id="lblArtstList" for="ArtistList">Select an artist:</label>
+        <label id="lblArtistList" for="ArtistList">Select an artist:</label>
         &nbsp;&nbsp;
         <select id="ArtistList" name="ArtistList">
             <option value="0">select ....</option>
@@ -58,7 +85,7 @@
         &nbsp;&nbsp;
         <button type="submit" id="theButton" name="theButton" value="submit"
                 class="btn btn-primary">
-            Get albums
+            Get Album
         </button>
     </div>
 </form>
