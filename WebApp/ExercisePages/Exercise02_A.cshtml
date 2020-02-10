@@ -17,9 +17,9 @@
     var db = Database.Open("Chinook");
 
     //create the sql command to be executed on the database
-    var sqlcommand = @"SELECT ArtistId
-                     FROM Artists
-                     WHERE Name like @0";
+    var sqlcommand = @"SELECT ArtistId, Name 
+                        FROM Artists
+                        WHERE Name like @0";
 
     var @partialstring = "%" + artistname + "%";
     var results = db.Query(sqlcommand, partialstring);
@@ -41,7 +41,7 @@
     {
         if (results.Count() == 0) //no results
         {
-            <p style="color:darkred">There was no record returned from the Data Base</p>
+            <p style="color:darkred">There is no artist by that name</p>
             artistname = "";
         }
         else if (results.Count() >= 1) //there is at least one result
@@ -52,6 +52,7 @@
         }
         else
         {
+            Response.Redirect("Exercise02_B.cshtml?cid=" + artistname);
             <p style="color:darkred">Please enter an artist name.</p>
         }
     }

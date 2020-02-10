@@ -3,41 +3,17 @@
     Page.Title = string.Format("Razor - {0}", "Exercise 02_B");
     var cid = Request.QueryString["cid"];
     var db = Database.Open("CHINOOK");
+    string sqlcommand = @"SELECT ArtistId, Name
+                    FROM Artists
+                    WHERE Name like @0
+                    ORDER BY Name";
 
-    if (IsPost)
-    {
-        var choice = Request.Form["ArtistNames"];
-        switch (choice.ToUpper())
-        {
-            case "TEXTBOX":
-                {
-                    //we will use the .Redirect("pagename") method of the outgoing object Response
-                    //to redirect us to a new page
-                    //relative addressing is needed for the page
-                    Response.Redirect("BasicForm.cshtml");
-                    break;
-                }
-            case "RADIOBUTTON":
-                {
-                    Response.Redirect("RadioButtons.cshtml");
-                    break;
-                }
-            case "CHECKBOX":
-                {
-                    Response.Redirect("CheckBoxes.cshtml");
-                    break;
-                }
-            default:
-                {
-                    //if the user did not make a selection (select .... which is the prompt line)
-                    <p style="color:firebrick">Make a selection.</p>
-                    break;
-                }
-        }
-    }
-    else
-    {
+    var partialstring = "%" + cid + "%";
+    var results = db.Query(sqlcommand, partialstring);
 
+    if (string.IsNullOrEmpty(cid))
+    {
+        Response.Redirect("Exercise02_A.cshtml");
     }
 }
 
@@ -45,22 +21,44 @@
     <h1>@Page.Title</h1>
 }
 
+@if (IsPost)
+    {
+        var choice = Request.Form["ArtistNames"];
+
+        if (choice.Equals("0"))
+        {
+<p style="color:darkturquoise">Please select an artist</p>
+            }
+            else
+            {
+
+            }
+        }
+
 
 
 <form id="theform" method="post">
-    <div class="row">
-        <div class="offset-1">
-            <label id="lblArtistNames">Select from the list:</label>&nbsp;&nbsp;
-            <select id="ArtistNames" name="ArtistNames">
-                <option value="">Select ...</option>
-                <option value="TextBox">TextBoxes</option>
-                <option value="RadioButton">RadioButtons</option>
-                <option value="CheckBox">CheckBoxes</option>
-            </select>&nbsp;&nbsp;
-            <button type="submit" id="theButton" name="theButton" value="submit"
-                    class="btn btn-primary">
-                Go To ...
-            </button>
-        </div>
+    <div class="offset-3">
+        <label id="lblArtstList" for="ArtistList">Select an artist:</label>
+        &nbsp;&nbsp;
+        <select id="ArtistList" name="ArtistList">
+            <option value="0">select ....</option>
+            @foreach (var artist in results)
+            {
+                //walk through the record collection of artist records
+                //for each record in the collection you will create an option line
+                //the display text will be the ArtistName
+                //the value attribute will use the CategoryID (FKey on Products)
+                //reminder of data access on a record
+                // a) index   syntax item[index]
+                // b) property name  syntax item.PropertyName (column title on the SQL select)
+                <option value="@artist.ArtistId">@artist.Name</option>
+            }
+        </select>
+        &nbsp;&nbsp;
+        <button type="submit" id="theButton" name="theButton" value="submit"
+                class="btn btn-primary">
+            Get albums
+        </button>
     </div>
 </form>

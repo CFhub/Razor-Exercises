@@ -6,3 +6,22 @@
 @section banner {
     <h1>@Page.Title</h1>
 }
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Artist Name</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var row in results)
+        {
+            <tr>
+                <td>@row.ArtistId</td>
+                <td>@row.Name</td>
+            </tr>
+        }
+    </tbody>
+</table>
