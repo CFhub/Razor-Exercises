@@ -3,6 +3,20 @@
     Page.Title = string.Format("Razor - {0}", "Exercise 02_C");
     var cid = Request.QueryString["cid"];
     var db = Database.Open("CHINOOK");
+    string artistcommand = @"SELECT ArtistId, Name
+                    FROM Artists
+                    WHERE ArtistId = @0";
+    string albumcommand = @"SELECT AlbumId, Title, ReleaseYear, ReleaseLabel
+                    FROM Albums
+                    WHERE ArtistId = @0
+                    ORDER BY Title";
+    var artistname = Request.Form["artistName"]; //name
+    var thebutton = Request.Form["theButton"];
+    var results = db.Query(artistcommand, albumcommand);
+    if (string.IsNullOrEmpty(cid))
+    {
+        Response.Redirect("Exercise02_A.cshtml");
+    }
 }
 
 @section banner {
@@ -11,11 +25,53 @@
 
 @if (IsPost)
 {
-    <p style="color:darkgreen">There was/were @results.Count() artist(s)</p>
-}
-else
-{
+    //obtain my data from the form
+    var choice = Request.Form["ArtistList"];
+    //check for a selection
+    if (thebutton.Equals("submit"))
+    {
+        if (choice.Equals("0")) //no selection
+        {
+<p style="color:darkturquoise">Please select an artist</p>
+        }
+        else //selection
+        {
+            //query db for products of selected category
+            var albumquery = @"SELECT AlbumId, Title,  ArtistId, ReleaseYear, ReleaseLabel
+            FROM Albums
+            WHERE ArtistId = @0";
+            var albuminfo = db.Query(albumquery, choice);
 
-}
+            //check to see if there are products for category
+            if (albuminfo.Count() == 0)//no results
+            {
+            <p style="color:darkturquoise">There are no albums from this artist.</p>
+            }
+            else //results
+            {
+            //pass ddl value (AlbumId) to next page
+            // to go to another page use Response.Redirect(pagename) (GET method)
+            // to pass data along with the page
+            // add a ? after the name
+            // add for each parameter a coded pair of    label = value
+            // separate data pairs with an  &
+            // sample syntax    Response.Redirect(page.ext?lbl=value[&lbl=value ...])
+            //WARNING: value are passed in plain text on Url
+            Response.Redirect("Exercise02_C.cshtml?cid=" + choice);
+            }
+            }
+            }
+            }
+
+            @if (IsPost)
+            {
+                <p style="color:darkgreen">There was/were @results.Count() artist(s)</p>
+            }
+            else
+            {
+                /*artistid 25 no albums (Milton Nascimento & Bebeto)*/
+            }
+
+
 
 
