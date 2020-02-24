@@ -18,8 +18,8 @@
 
     //create the sql command to be executed on the database
     var artistcommand = @"SELECT ArtistId, Name
-                        FROM Artists
-                        WHERE Name like @0";
+        FROM Artists
+        WHERE Name like @0";
 
     var @partialstring = "%" + artistname + "%";
     var results = db.Query(artistcommand, partialstring);
@@ -31,7 +31,6 @@
 
 @if (IsPost)
 {
-    <p>IsPost = true</p>
     if (thebutton.Equals("reset"))
     {
         <p style="color:darkblue">The Reset Button was just Pressed</p>
@@ -46,16 +45,15 @@
         }
         else  //there is at least one result or no input
         {
+            //<p style="color:darkred">@artistname</p> testing
             //WARNING: value are passed in plain text on Url
+            <p style="color:darkturquoise">Please select an artist</p>
             Response.Redirect("Exercise02_B.cshtml?cid=" + artistname);
-
         }
     }
 }
 else
 {
-    <p>IsPost = false</p>
-    <p style="color:darkblue">The Data Base has NOT been queried</p>
     artistname = "";
 }
 

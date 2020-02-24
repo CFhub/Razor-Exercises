@@ -1,0 +1,343 @@
+﻿@{
+    Layout = "~/_Layout.cshtml";
+    Page.Title = string.Format("Razor - {0}", "Exercise 04_B - Update/Delete");
+
+    var pid = Request.QueryString["pid"];
+    if (pid.IsEmpty())
+    {
+        Response.Redirect("Exercise04_A.cshtml");
+    }
+
+    var title = Request.Form["Title"];
+    var artistid = Request.Form["ArtistList"];
+    var releaseyear = Request.Form["ReleaseYear"];
+    var releaselabel = Request.Form["ReleaseLabel"];
+    var albumid = Request.Form["AlbumId"];
+    var thebutton = Request.Form["theButton"];
+
+    var db = Database.Open("Chinook");
+    var queryStatement = @"SELECT AlbumId, Title, ArtistId, ReleaseYear, ReleaseLabel
+FROM Albums
+WHERE AlbumId = @0";
+    var queryAlbums = db.QuerySingle(queryStatement, pid);
+
+    var queryStatementName = @"SELECT Title
+FROM Albums
+WHERE AlbumId = @0";
+    var titlename = db.QueryValue(queryStatementName, pid);
+
+    var artistquery = @"SELECT ArtistId, Name
+FROM Artists
+Order by Name";
+    var artistlist = db.Query(artistquery);
+    var albumcommand = @"SELECT AlbumId, Title, ArtistId, ReleaseYear, ReleaseLabel
+FROM Albums
+WHERE Title = @0";
+    var albuminfo = db.Query(albumcommand, pid);
+
+    Validation.Add("Title",
+        Validator.Required("A title is required"),
+        Validator.StringLength(160, 0, "The title is limited to 160 characters"));
+
+    Validation.Add("ArtistList",
+        Validator.Required("Artist name is required"));
+
+    Validation.Add("ReleaseYear",
+        Validator.Required("Release year is required"),
+        Validator.Integer("Release year must be a number"),
+        Validator.Range(1950, DateTime.Today.Year, "Release year must be between 1950 and today"));
+
+    Validation.Add("ReleaseLabel",
+        Validator.StringLength(50, 0, "Release label is limited to 50 characters"));
+
+}
+
+@section banner {
+    <h1>@Page.Title</h1>
+}
+
+@if (IsPost)
+{
+    if (thebutton.Equals("cancel"))
+    {
+        //options
+        //a) redirect to the search page
+        //b) msg to the user
+        //   redirect link to the search page
+        //   clear the fields
+        albumid = "";
+        title = "";
+        artistid = "0";
+        releaseyear = "";
+        releaselabel = "";
+
+        <div class="col-12 text-center">
+            <p>
+                <span style="color:brown">
+                    Action cancelled. Return to album search for new album.
+                </span>
+                <a href="~/ExercisePages/Exercise04_A.cshtml"> go to search ...</a>
+            </p>
+        </div>
+
+    }
+    else if (thebutton.Equals("delete"))
+    {
+        // this demo does not include the expect client side validation code
+        // if this demo did include the validatin code, the following would be
+        //    within a Validation.IsValid() test
+
+        //you may have logical validation needed for your data that cannot
+        //be accomplished using Validation Controls or HTML5
+        //this type of validation is a programmed validation
+
+        //assume that the categoryid is a required field
+
+            //you may have logical validation needed for your data that cannot
+            //be accomplished using Validation Controls or HTML5
+            //this type of validation is a programmed validation
+
+            //assume that the categoryid is a required field
+
+            var valid = true;
+            if (artistid.Equals("0"))
+            {
+                valid = false;
+                <div class="col-12 text-center">
+                    <p>
+                        <span style="color:brown">
+                            Delete failed. Missing artist name. Return to album search for new album.
+                        </span>
+                        <a href="~/ExercisePages/Exercise04_A.cshtml"> go to search ...</a>
+                    </p>
+                </div>
+            }
+            
+            //check validation result
+            if (valid)
+            {
+                //good data
+                try
+                {
+                    //connect to the database
+                    //  done above
+                    //create sql command
+
+                    var sqlcommand = @"DELETE Albums
+                                     WHERE AlbumId = @0";
+
+                    //execute the command
+                    var rowsaffected = db.Execute(sqlcommand, albumid);
+
+                    if (rowsaffected > 0)
+                    {
+                        <div class="col-12 text-center">
+                            <p style="color:green">
+                                Product has been deleted
+                            </p>
+                            <p><a href="~/ExercisePages/Exercise04_A.cshtml">Search for another album...</a></p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-12 text-center">
+                            <p>
+                                <span style="color:brown">
+                                    Album not found on file. Delete not done. Return to album search for new album.
+                                </span>
+                                <a href="~/ExercisePages/Exercise04_A.cshtml"> go to search ...</a>
+                            </p>
+                        </div>
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    <div class="col-12 text-center">
+                        <p style="color:firebrick; font-size:large">
+                            Processing error: @ex.Message
+                        </p>
+                    </div>
+                }
+            }
+
+
+        
+
+    }
+    else //update
+    {
+        // this demo does not include the expect client side validation code
+        // if this demo did include the validatin code, the following would be
+        //    within a Validation.IsValid() test
+
+        //you may have logical validation needed for your data that cannot
+        //be accomplished using Validation Controls or HTML5
+        //this type of validation is a programmed validation
+        if (Validation.IsValid())
+        {
+            var valid = true;
+            if (artistid.Equals("0"))
+            {
+                valid = false;
+                <div class="col-12 text-center">
+                    <p style="color:darkslateblue">
+                        You must select an artist
+                    </p>
+                </div>
+            }
+
+
+            //check validation result
+            if (valid)
+            {
+                //good data
+                try
+                {
+                    //connect to the database
+                    //  done above
+                    //create sql command
+                    var sqlcommand = @"UPDATE Albums
+                                    SET Title = @0,
+                                    ArtistId = @1,
+                                    ReleaseYear = @2,
+                                    ReleaseLabel = @3
+                                    WHERE AlbumId = @4";
+
+                    //execute the command
+                    var rowsaffected = db.Execute(sqlcommand,
+                        title, artistid, releaseyear,
+                        releaselabel, albumid);
+                    if (rowsaffected > 0)
+                    {
+                        <div class="col-12 text-center">
+                            <p style="color:green">
+                                Album has been updated.
+                            </p>
+                            <p> <a href="~/ExercisePages/Exercise04_A.cshtml">Search for another album ...</a></p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-12 text-center">
+                            <p>
+                                <span style="color:brown">
+                                    Album not found on file. Update not done. Return to album search for new album
+                                </span>
+                                <a href="~/ExercisePages/Exercise04_A.cshtml"> go to search ....</a>
+                                
+                            </p>
+                        </div>
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    <div class="col-12 text-center">
+                        <p style="color:firebrick; font-size:large">
+                            Processing error: @ex.Message
+                        </p>
+                    </div>
+                }
+            }
+        }
+        @Html.ValidationSummary()
+
+        //assume that the categoryid is a required field
+
+
+    }
+}
+else //for IsPost
+{
+    //if this page is being shown for the "first time"
+    //the page accesses the database for the current record
+    //to display to the user
+    queryAlbums = db.QuerySingle(queryStatement, pid);
+
+    //moving the current record data to the form controls
+    //NEVER code to the data supplied
+    //the Products table on the Northwind database does not
+    //  have a record where the nullable fields are actual null
+    //the following code takes into account fields which actually
+    //  maybe null
+    albumid = queryAlbums.AlbumId.ToString();
+    title = queryAlbums.Title;
+    artistid = queryAlbums.ArtistId == null ? "0" : queryAlbums.ArtistId.ToString();
+    releaseyear = queryAlbums.ReleaseYear == null ? "" : queryAlbums.ReleaseYear.ToString();
+    releaselabel = queryAlbums.ReleaseLabel == null ? "" : queryAlbums.ReleaseLabel.ToString();;
+}
+
+
+
+<div class="form-group">
+
+    <form id="theForm" action="" method="post">
+        <div class="row">
+            <div class="col-6 text-right">
+                <label for="AlbumId">AlbumID:</label><br />
+                <label for="Title">Title:</label><br />
+                <label for="ArtistId">Artist:</label><br />
+                <label for="ReleaseYear">Year:</label><br />
+                <label for="ReleaseLabel">Label:</label><br />
+            </div>
+            <div class="col-6 text-left">
+                <input type="text" name="AlbumId" value="@albumid" readonly /><br />
+                <input type="text" name="Title" value="@title" id="Title" /><br />
+
+                <select id="ArtistList" name="ArtistList">
+                    <option value="0">select artist...</option>
+                    @foreach (var artist in artistlist)
+                    {
+                        //for the select control, the default display on an event
+                        //   is the 1st option tag
+                        //to retain the option selected between posts, you need to
+                        //   set the selected option using the attribute selected
+                        if (artistid == artist.ArtistId.ToString())
+                        {
+                            <option value="@artist.ArtistId" selected>@artist.Name</option>
+                        }
+                        else
+                        {
+                            <option value="@artist.ArtistId">@artist.Name</option>
+                        }
+
+                    }
+                </select>
+                <br />
+                <input type="number" id="ReleaseYear" name="ReleaseYear"
+                       value="@releaseyear" /><br />
+                <input type="text" id="ReleaseLabel" name="ReleaseLabel"
+                       value="@releaselabel" /><br />
+                <br />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12 text-center">
+                <button type="submit" name="theButton" id="theUpdate" class="btn btn-primary"
+                        value="update">
+                    Update
+                </button>&nbsp;&nbsp;&nbsp;
+                <button type="submit" name="theButton" id="theDelete" class="btn btn-primary" formnovalidate
+                        value="delete">
+                    Delete
+                </button>&nbsp;&nbsp;&nbsp;
+                <button type="submit" name="theButton" id="theCancel" class="btn btn-primary" formnovalidate
+                        value="cancel">
+                    Cancel
+                </button>
+            </div>
+        </div>
+        @* confirmation can be done on a button click using javascript
+            we will ask the user to confirm the discontinuing of a product*@
+        <script type="text/javascript">
+            document.getElementById("theDelete").onclick = ConfirmDelete;
+            function ConfirmDelete() {
+                return confirm("Are you sure you want to delete '@titlename'? (This cannot be undone)");
+            }
+        </script>
+    </form>
+</div>
+
+
+

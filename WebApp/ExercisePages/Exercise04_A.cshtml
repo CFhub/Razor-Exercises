@@ -1,0 +1,76 @@
+﻿@{
+    Layout = "~/_Layout.cshtml";
+    Page.Title = string.Format("Razor - {0}", "Exercise 04_A - Lookup");
+
+    var albumsearch = Request.Form["AlbumSearch"];
+
+    var db = Database.Open("Chinook");
+  
+    var partialstring = "%" + albumsearch + "%";
+
+    
+    var albumcommand = @"SELECT AlbumId, Title, ArtistId, ReleaseYear, ReleaseLabel 
+FROM Albums
+WHERE Title like @0";
+}
+
+@section banner {
+    <h1>@Page.Title</h1>
+}
+
+<div class="form-group">
+
+    <form id="theForm" action="" method="post">
+        <div class="col-sm-3">
+            <label id="forAlbumSearch">Album Name</label><br />
+            <input type="text" name="AlbumSearch" value=" @albumsearch"><br /><br />
+            <button type="submit" class="btn btn-primary" name="Search" id="theSearch">Search</button>
+
+        </div>
+        <div class="col-sm-8">
+            @if (IsPost)
+            {
+                if (albumsearch.IsEmpty())
+                {
+                    <p><strong><span style="color:firebrick">Enter an album name (or partial name).</span></strong></p>
+                }
+                else
+                {
+                    var queryAlbums = db.Query(albumcommand, partialstring);
+                    if (queryAlbums.Count() == 0)
+                    {
+                        <p><strong><span style="color:firebrick">There is no album by that name</span></strong></p>
+                    }
+                    else
+                    {
+                        var grid = new WebGrid(queryAlbums, rowsPerPage: 10);
+                        @grid.GetHtml("table table-bordered table-striped table-hover",
+                        mode: WebGridPagerModes.All,
+                        lastText: "Last",
+                        firstText: "First",
+                        columns: grid.Columns(
+                        grid.Column(columnName: "AlbumId", header: "AlbumID"),
+                        grid.Column(columnName: "Title"),
+                        grid.Column(columnName: "ArtistId", header: "ArtistID"),
+                        grid.Column(columnName: "ReleaseYear", header: "Year"),
+                        grid.Column(columnName: "ReleaseLabel", header: "Label"),
+                        grid.Column(header: "", format: @<text><a href="~/ExercisePages/Exercise04_B.cshtml?pid=@item.AlbumId">Edit</a></text>)
+));
+                    }
+                }
+            }
+        </div>
+        @* Since the webgrid is within a form using the method:post, the
+             webgrid's paging method:Get ends in a conflict
+            The following script causes the webgrid paging Get to be converted into
+             a method: post*@
+        <script type="text/javascript">
+            var links = $('a[href*=page], a[href*=sort]'), form = $('form');
+            links.click(function () {
+                form.attr("action", this.href);
+                $(this).attr("href", "javascript:");
+                form.submit();
+            });
+        </script>
+    </form>
+</div> 

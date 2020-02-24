@@ -4,11 +4,10 @@
     var cid = Request.QueryString["cid"];
     var db = Database.Open("CHINOOK");
     string artistcommand = @"SELECT ArtistId, Name
-                            FROM Artists
-                            WHERE Name like @0
-                            ORDER BY Name";
+                    FROM Artists
+                    WHERE Name like @0
+                    ORDER BY Name";
 
-    var artistname = Request.Form["artistName"]; //name
     var thebutton = Request.Form["theButton"];
     var partialstring = "%" + cid + "%";
     var results = db.Query(artistcommand, partialstring);
@@ -32,12 +31,12 @@
     {
         if (choice.Equals("0")) //no selection
         {
-            <p style="color:darkturquoise">Please select an artist</p>
+            Response.Redirect("Exercise02_C.cshtml?cid=" + choice);
         }
         else //selection
         {
             //query db for products of selected category
-            var albumquery = @"SELECT AlbumId, Title,  ArtistId, ReleaseYear, ReleaseLabel
+            var albumquery = @"SELECT AlbumId, Title, ArtistId, ReleaseYear, ReleaseLabel
                  FROM Albums
                  WHERE ArtistId = @0";
             var albuminfo = db.Query(albumquery, choice);
@@ -45,7 +44,7 @@
             //check to see if there are products for category
             if (albuminfo.Count() == 0)//no results
             {
-                <p style="color:darkturquoise">There are no albums from this artist.</p>
+                 Response.Redirect("Exercise02_C.cshtml?cid=" + choice);
             }
             else //results
             {
